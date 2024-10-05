@@ -5,12 +5,17 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 )
 
 func main() {
 	// Flag to control config of the application
 	addr := flag.String("addr", ":4000", "HTTP Network address")
 	flag.Parse()
+
+	// Custom logging
+	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
+	errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 
 	// as good practice always use our own ServerMux
 	mux := http.NewServeMux()
@@ -26,9 +31,9 @@ func main() {
 	mux.HandleFunc(fmt.Sprintf("%s /snippet/{id}", http.MethodGet), snippetView)
 	mux.HandleFunc(fmt.Sprintf("%s /snippet", http.MethodPost), snippetCreate)
 
-	log.Printf("Starting server on %s\n", *addr)
+	infoLog.Printf("Starting server on %s\n", *addr)
 	err := http.ListenAndServe(*addr, mux)
 	if err != nil {
-		log.Fatal(err)
+		errorLog.Fatal(err)
 	}
 }
