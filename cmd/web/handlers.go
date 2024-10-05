@@ -35,14 +35,12 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	// Parse the template files
 	ts, err := template.ParseFiles(files...)
 	if err != nil {
-		app.errorLog.Println(err.Error())
 		app.serverError(w, err)
 		return
 	}
 
 	// Execute the "base" template and write it to the response
 	if err := ts.ExecuteTemplate(w, "base", nil); err != nil {
-		app.errorLog.Println(err.Error())
 		app.serverError(w, err)
 		return
 	}
