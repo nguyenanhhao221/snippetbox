@@ -31,9 +31,15 @@ func main() {
 	mux.HandleFunc(fmt.Sprintf("%s /snippet/{id}", http.MethodGet), snippetView)
 	mux.HandleFunc(fmt.Sprintf("%s /snippet", http.MethodPost), snippetCreate)
 
+	srv := &http.Server{
+		Addr:     *addr,
+		ErrorLog: errorLog,
+		Handler:  mux,
+	}
+
 	infoLog.Printf("Starting server on %s\n", *addr)
-	err := http.ListenAndServe(*addr, mux)
-	if err != nil {
+
+	if err := srv.ListenAndServe(); err != nil {
 		errorLog.Fatal(err)
 	}
 }
