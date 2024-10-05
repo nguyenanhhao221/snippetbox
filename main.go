@@ -6,7 +6,9 @@ import (
 )
 
 func home(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("hello world"))
+	if _, err := w.Write([]byte("hello world\n")); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 }
 
 func main() {
