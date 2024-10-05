@@ -8,6 +8,13 @@ import (
 	"os"
 )
 
+// Define an application struct to hold the application-wide dependencies for the
+// web application
+type application struct {
+	errorLog *log.Logger
+	infoLog  *log.Logger
+}
+
 func main() {
 	// Flag to control config of the application
 	addr := flag.String("addr", ":4000", "HTTP Network address")
@@ -16,6 +23,11 @@ func main() {
 	// Custom logging
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
 	errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
+
+	app := &application{
+		errorLog: errorLog,
+		infoLog:  infoLog,
+	}
 
 	// as good practice always use our own ServerMux
 	mux := http.NewServeMux()
@@ -27,9 +39,9 @@ func main() {
 
 	mux.Handle("/static/", http.StripPrefix("/static", fileServer))
 
-	mux.HandleFunc("/", home)
-	mux.HandleFunc(fmt.Sprintf("%s /snippet/{id}", http.MethodGet), snippetView)
-	mux.HandleFunc(fmt.Sprintf("%s /snippet", http.MethodPost), snippetCreate)
+	mux.HandleFunc("/", app.home)
+	mux.HandleFunc(fmt.Sprintf("%s /snippet/{id}", http.MethodGet), app.snippetView)
+	mux.HandleFunc(fmt.Sprintf("%s /snippet", http.MethodPost), app.snippetCreate)
 
 	srv := &http.Server{
 		Addr:     *addr,
