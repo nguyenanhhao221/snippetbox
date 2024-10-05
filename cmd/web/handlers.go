@@ -2,7 +2,10 @@ package main
 
 import (
 	"fmt"
+	"html/template"
+	"log"
 	"net/http"
+	"path/filepath"
 	"strconv"
 )
 
@@ -11,8 +14,37 @@ func home(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
-	if _, err := w.Write([]byte("Hello from Snippetbox.\n")); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+
+	// List of template files
+	files := []string{
+		"./ui/html/base.tmpl.html",
+		"./ui/html/pages/home.tmpl.html",
+	}
+
+	// Convert all template paths to absolute paths
+	for i, file := range files {
+		absFilePath, err := filepath.Abs(file)
+		if err != nil {
+			log.Println("Error finding absolute path:", err)
+			http.Error(w, "Internal Server Error, Unable to Find Template Path", http.StatusInternalServerError)
+			return
+		}
+		files[i] = absFilePath
+	}
+
+	// Parse the template files
+	ts, err := template.ParseFiles(files...)
+	if err != nil {
+		log.Println(err.Error())
+		http.Error(w, "Internal Server Error, Fail To Parse HTML", http.StatusInternalServerError)
+		return
+	}
+
+	// Execute the "base" template and write it to the response
+	if err := ts.ExecuteTemplate(w, "base", nil); err != nil {
+		log.Println(err.Error())
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
 	}
 }
 
