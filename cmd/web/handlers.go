@@ -57,7 +57,18 @@ func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
-	if _, err := w.Write([]byte("Creating new snippet...\n")); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+	// Create some variables holding dummy data. We'll remove these later on
+	// during the build.
+	title := "O snail"
+	content := "O snail\nClimb Mount Fuji,\nBut slowly, slowly!\n\n– Kobayashi Issa"
+	expires := 7
+	id, err := app.model.Insert(title, content, expires)
+	if err != nil {
+		app.serverError(w, err)
+		return
 	}
+	// Log the redirect URL
+	app.infoLog.Printf("Redirecting to /snippet/%d", id)
+	// Redirect the user to the relevant page for the snippet.
+	http.Redirect(w, r, fmt.Sprintf("/snippet/%d", id), http.StatusSeeOther)
 }
