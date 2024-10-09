@@ -1,11 +1,14 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"html/template"
 	"net/http"
 	"path/filepath"
 	"strconv"
+
+	"snippetbox.haonguyen.tech/internal/models"
 )
 
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
@@ -52,8 +55,17 @@ func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 		app.notFound(w)
 		return
 	}
+	snippet, err := app.snippets.Get(id)
+	if err != nil {
+		if errors.Is(err, models.ErrNoRecord) {
+			app.notFound(w)
+		} else {
+			app.serverError(w, err)
+		}
+		return
+	}
 
-	fmt.Fprintf(w, "Display a specific snippet with ID %d....\n", id)
+	fmt.Fprintf(w, "%+v", snippet)
 }
 
 func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
@@ -62,7 +74,7 @@ func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
 	title := "O snail"
 	content := "O snail\nClimb Mount Fuji,\nBut slowly, slowly!\n\n– Kobayashi Issa"
 	expires := 7
-	id, err := app.model.Insert(title, content, expires)
+	id, err := app.snippets.Insert(title, content, expires)
 	if err != nil {
 		app.serverError(w, err)
 		return
@@ -71,4 +83,15 @@ func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
 	app.infoLog.Printf("Redirecting to /snippet/%d", id)
 	// Redirect the user to the relevant page for the snippet.
 	http.Redirect(w, r, fmt.Sprintf("/snippet/%d", id), http.StatusSeeOther)
+}
+
+func (app *application) snippetViewLatest(w http.ResponseWriter, r *http.Request) {
+	snippets, err := app.snippets.Latest()
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+	for _, s := range snippets {
+		fmt.Fprintf(w, "%+v\n", s)
+	}
 }

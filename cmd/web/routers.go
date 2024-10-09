@@ -19,6 +19,7 @@ func (app *application) routes() *http.ServeMux {
 
 	mux.HandleFunc("/", app.home)
 	mux.HandleFunc(fmt.Sprintf("%s /snippet/{id}", http.MethodGet), app.snippetView)
+	mux.HandleFunc(fmt.Sprintf("%s /snippet/latest", http.MethodGet), app.snippetViewLatest)
 	mux.HandleFunc(fmt.Sprintf("%s /snippet", http.MethodPost), app.snippetCreate)
 
 	return mux
