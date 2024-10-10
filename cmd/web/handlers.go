@@ -68,6 +68,17 @@ func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "%+v", snippet)
 }
 
+func (app *application) snippetViewLatest(w http.ResponseWriter, r *http.Request) {
+	snippets, err := app.snippets.Latest()
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+	for _, s := range snippets {
+		fmt.Fprintf(w, "%+v\n", s)
+	}
+}
+
 func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
 	// Create some variables holding dummy data. We'll remove these later on
 	// during the build.
@@ -83,15 +94,4 @@ func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
 	app.infoLog.Printf("Redirecting to /snippet/%d", id)
 	// Redirect the user to the relevant page for the snippet.
 	http.Redirect(w, r, fmt.Sprintf("/snippet/%d", id), http.StatusSeeOther)
-}
-
-func (app *application) snippetViewLatest(w http.ResponseWriter, r *http.Request) {
-	snippets, err := app.snippets.Latest()
-	if err != nil {
-		app.serverError(w, err)
-		return
-	}
-	for _, s := range snippets {
-		fmt.Fprintf(w, "%+v\n", s)
-	}
 }
