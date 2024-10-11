@@ -17,6 +17,12 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	snippets, err := app.snippets.Latest()
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
 	// List of template files
 	files := []string{
 		"./ui/html/base.tmpl.html",
@@ -42,8 +48,10 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	data := &templateData{Snippets: snippets}
+
 	// Execute the "base" template and write it to the response
-	if err := ts.ExecuteTemplate(w, "base", nil); err != nil {
+	if err := ts.ExecuteTemplate(w, "base", data); err != nil {
 		app.serverError(w, err)
 		return
 	}
