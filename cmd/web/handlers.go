@@ -55,6 +55,7 @@ func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 		app.notFound(w)
 		return
 	}
+
 	snippet, err := app.snippets.Get(id)
 	if err != nil {
 		if errors.Is(err, models.ErrNoRecord) {
@@ -65,7 +66,38 @@ func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Fprintf(w, "%+v", snippet)
+	// List of template files
+	files := []string{
+		"./ui/html/base.tmpl.html",
+		"./ui/html/pages/view.tmpl.html",
+		"./ui/html/partials/nav.tmpl.html",
+	}
+
+	// Convert all template paths to absolute paths
+	for i, file := range files {
+		absFilePath, err := filepath.Abs(file)
+		if err != nil {
+			app.errorLog.Println("Error finding absolute path:", err)
+			app.serverError(w, err)
+			return
+		}
+		files[i] = absFilePath
+	}
+
+	// Parse the template files
+	ts, err := template.ParseFiles(files...)
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
+	data := &templateData{Snippet: snippet}
+
+	// Execute the "base" template and write it to the response
+	if err := ts.ExecuteTemplate(w, "base", data); err != nil {
+		app.serverError(w, err)
+		return
+	}
 }
 
 func (app *application) snippetViewLatest(w http.ResponseWriter, r *http.Request) {
