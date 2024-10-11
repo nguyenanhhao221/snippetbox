@@ -21,7 +21,7 @@ func (app *application) routes() http.Handler {
 
 	mux.HandleFunc("/", app.home)
 	mux.HandleFunc(fmt.Sprintf("%s /snippet/{id}", http.MethodGet), app.snippetView)
-	mux.HandleFunc(fmt.Sprintf("%s /snippet/latest", http.MethodGet), app.snippetViewLatest)
+	mux.HandleFunc(fmt.Sprintf("%s /snippet/latest", http.MethodGet), app.home)
 	mux.HandleFunc(fmt.Sprintf("%s /snippet", http.MethodPost), app.snippetCreate)
 
 	standard := alice.New(app.panicRecover, app.loggingRequest, securityHeader)

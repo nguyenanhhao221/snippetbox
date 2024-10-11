@@ -14,7 +14,6 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 		app.notFound(w)
 		return
 	}
-
 	snippets, err := app.snippets.Latest()
 	if err != nil {
 		app.serverError(w, err)
@@ -46,17 +45,6 @@ func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 	data := app.newTemplateData()
 	data.Snippet = snippet
 	app.render(w, http.StatusOK, "view.tmpl.html", data)
-}
-
-func (app *application) snippetViewLatest(w http.ResponseWriter, r *http.Request) {
-	snippets, err := app.snippets.Latest()
-	if err != nil {
-		app.serverError(w, err)
-		return
-	}
-	for _, s := range snippets {
-		fmt.Fprintf(w, "%+v\n", s)
-	}
 }
 
 func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
