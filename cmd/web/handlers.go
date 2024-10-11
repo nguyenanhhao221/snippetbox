@@ -3,9 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
-	"html/template"
 	"net/http"
-	"path/filepath"
 	"strconv"
 
 	"snippetbox.haonguyen.tech/internal/models"
@@ -23,38 +21,7 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// List of template files
-	files := []string{
-		"./ui/html/base.tmpl.html",
-		"./ui/html/pages/home.tmpl.html",
-		"./ui/html/partials/nav.tmpl.html",
-	}
-
-	// Convert all template paths to absolute paths
-	for i, file := range files {
-		absFilePath, err := filepath.Abs(file)
-		if err != nil {
-			app.errorLog.Println("Error finding absolute path:", err)
-			app.serverError(w, err)
-			return
-		}
-		files[i] = absFilePath
-	}
-
-	// Parse the template files
-	ts, err := template.ParseFiles(files...)
-	if err != nil {
-		app.serverError(w, err)
-		return
-	}
-
-	data := &templateData{Snippets: snippets}
-
-	// Execute the "base" template and write it to the response
-	if err := ts.ExecuteTemplate(w, "base", data); err != nil {
-		app.serverError(w, err)
-		return
-	}
+	app.render(w, http.StatusOK, "home.tmpl.html", &templateData{Snippets: snippets})
 }
 
 func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
@@ -73,39 +40,7 @@ func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
-
-	// List of template files
-	files := []string{
-		"./ui/html/base.tmpl.html",
-		"./ui/html/pages/view.tmpl.html",
-		"./ui/html/partials/nav.tmpl.html",
-	}
-
-	// Convert all template paths to absolute paths
-	for i, file := range files {
-		absFilePath, err := filepath.Abs(file)
-		if err != nil {
-			app.errorLog.Println("Error finding absolute path:", err)
-			app.serverError(w, err)
-			return
-		}
-		files[i] = absFilePath
-	}
-
-	// Parse the template files
-	ts, err := template.ParseFiles(files...)
-	if err != nil {
-		app.serverError(w, err)
-		return
-	}
-
-	data := &templateData{Snippet: snippet}
-
-	// Execute the "base" template and write it to the response
-	if err := ts.ExecuteTemplate(w, "base", data); err != nil {
-		app.serverError(w, err)
-		return
-	}
+	app.render(w, http.StatusOK, "view.tmpl.html", &templateData{Snippet: snippet})
 }
 
 func (app *application) snippetViewLatest(w http.ResponseWriter, r *http.Request) {
