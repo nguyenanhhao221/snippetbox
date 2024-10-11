@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-func (app *application) routes() *http.ServeMux {
+func (app *application) routes() http.Handler {
 
 	// as good practice always use our own ServerMux
 	mux := http.NewServeMux()
@@ -22,5 +22,6 @@ func (app *application) routes() *http.ServeMux {
 	mux.HandleFunc(fmt.Sprintf("%s /snippet/latest", http.MethodGet), app.snippetViewLatest)
 	mux.HandleFunc(fmt.Sprintf("%s /snippet", http.MethodPost), app.snippetCreate)
 
-	return mux
+	// Apply securityHeader middleware
+	return securityHeader(mux)
 }
