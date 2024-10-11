@@ -47,6 +47,11 @@ func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 	app.render(w, http.StatusOK, "view.tmpl.html", data)
 }
 
+func (app *application) snippetCreateForm(w http.ResponseWriter, r *http.Request) {
+	var data = app.newTemplateData()
+	app.render(w, http.StatusOK, "create.tmpl.html", data)
+}
+
 func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
 	// Create some variables holding dummy data. We'll remove these later on
 	// during the build.
