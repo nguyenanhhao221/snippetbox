@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"runtime/debug"
+	"time"
 )
 
 // serverError helper writes an error message and stack trace to the errorLog,
@@ -38,5 +39,11 @@ func (app *application) render(w http.ResponseWriter, status int, page string, d
 	err := ts.ExecuteTemplate(w, "base", data)
 	if err != nil {
 		app.serverError(w, err)
+	}
+}
+
+func (app *application) newTemplateData() *templateData {
+	return &templateData{
+		CurrentYear: time.Now().Year(),
 	}
 }
