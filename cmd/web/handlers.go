@@ -51,7 +51,9 @@ func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data := app.newTemplateData()
+	flash := app.sessionManager.PopString(r.Context(), "flash")
 	data.Snippet = snippet
+	data.Flash = flash
 	app.render(w, http.StatusOK, "view.tmpl.html", data)
 }
 
@@ -88,6 +90,9 @@ func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
 		app.serverError(w, err)
 		return
 	}
+
+	// Update the session to have a flash key
+	app.sessionManager.Put(r.Context(), "flash", "Snippet created successfully!")
 	// Log the redirect URL
 	app.infoLog.Printf("Redirecting to /snippet/%d", id)
 	// Redirect the user to the relevant page for the snippet.

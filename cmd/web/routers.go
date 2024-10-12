@@ -17,13 +17,15 @@ func (app *application) routes() http.Handler {
 	// directory root.
 	fileServer := http.FileServer(http.Dir("./ui/static/"))
 
+	dynamic := alice.New(app.sessionManager.LoadAndSave)
+
 	mux.Handle("/static/", http.StripPrefix("/static", fileServer))
 
-	mux.HandleFunc("/", app.home)
-	mux.HandleFunc(fmt.Sprintf("%s /snippet/{id}", http.MethodGet), app.snippetView)
-	mux.HandleFunc(fmt.Sprintf("%s /snippet/latest", http.MethodGet), app.home)
-	mux.HandleFunc(fmt.Sprintf("%s /snippet", http.MethodGet), app.snippetCreateForm)
-	mux.HandleFunc(fmt.Sprintf("%s /snippet", http.MethodPost), app.snippetCreate)
+	mux.Handle("/", dynamic.ThenFunc(app.home))
+	mux.Handle(fmt.Sprintf("%s /snippet/{id}", http.MethodGet), dynamic.ThenFunc(app.snippetView))
+	mux.Handle(fmt.Sprintf("%s /snippet/latest", http.MethodGet), dynamic.ThenFunc(app.home))
+	mux.Handle(fmt.Sprintf("%s /snippet", http.MethodGet), dynamic.ThenFunc(app.snippetCreateForm))
+	mux.Handle(fmt.Sprintf("%s /snippet", http.MethodPost), dynamic.ThenFunc(app.snippetCreate))
 
 	standard := alice.New(app.panicRecover, app.loggingRequest, securityHeader)
 	// We can apply middleware here by chaining
