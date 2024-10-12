@@ -92,6 +92,7 @@ func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
 		data := app.newTemplateData()
 		data.Form = form
 		app.render(w, http.StatusUnprocessableEntity, "create.tmpl.html", data)
+		return
 	}
 
 	id, err := app.snippets.Insert(form.Title, form.Content, form.Expires)
