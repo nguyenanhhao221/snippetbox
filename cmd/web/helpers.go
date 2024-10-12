@@ -1,10 +1,13 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"runtime/debug"
 	"time"
+
+	"github.com/go-playground/form"
 )
 
 // serverError helper writes an error message and stack trace to the errorLog,
@@ -46,4 +49,22 @@ func (app *application) newTemplateData() *templateData {
 	return &templateData{
 		CurrentYear: time.Now().Year(),
 	}
+}
+
+// decodePostForm helper to decode form to dst, if dst is a nil pointer, panic
+func (app *application) decodePostForm(r *http.Request, dst any) error {
+	err := r.ParseForm()
+	if err != nil {
+		return err
+	}
+
+	err = app.formDecoder.Decode(dst, r.PostForm)
+	if err != nil {
+		var invalidDecodeError *form.InvalidDecoderError
+		if errors.As(err, &invalidDecodeError) {
+			panic(err)
+		}
+		return err
+	}
+	return nil
 }

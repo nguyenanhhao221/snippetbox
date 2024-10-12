@@ -64,15 +64,8 @@ func (app *application) snippetCreateForm(w http.ResponseWriter, r *http.Request
 }
 
 func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
-	// Call ParseForm which adds any data in the POST requests bodies form to the r.PostForm map
-	err := r.ParseForm()
-	if err != nil {
-		app.clientError(w, http.StatusBadRequest)
-		return
-	}
-
 	form := snippetCreateForm{}
-	if err := app.formDecoder.Decode(&form, r.PostForm); err != nil {
+	if err := app.decodePostForm(r, &form); err != nil {
 		app.clientError(w, http.StatusBadRequest)
 		return
 	}
