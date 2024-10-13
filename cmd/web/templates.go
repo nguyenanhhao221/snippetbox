@@ -8,12 +8,15 @@ import (
 	"snippetbox.haonguyen.tech/internal/models"
 )
 
+// templateData Mostly define data that will be used in the template,
+// or in another word, "inject" into the front end dynamic data
 type templateData struct {
-	Snippet     *models.Snippet
-	Snippets    []*models.Snippet
-	CurrentYear int
-	Form        any
-	Flash       string
+	Snippet         *models.Snippet
+	Snippets        []*models.Snippet
+	CurrentYear     int
+	Form            any
+	Flash           string
+	IsAuthenticated bool
 }
 
 func humanDate(t time.Time) string {
