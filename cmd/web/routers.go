@@ -27,6 +27,13 @@ func (app *application) routes() http.Handler {
 	mux.Handle(fmt.Sprintf("%s /snippet", http.MethodGet), dynamic.ThenFunc(app.snippetCreateForm))
 	mux.Handle(fmt.Sprintf("%s /snippet", http.MethodPost), dynamic.ThenFunc(app.snippetCreate))
 
+	// Users
+	mux.Handle(fmt.Sprintf("%s /user/signup", http.MethodGet), dynamic.ThenFunc(app.userSignUp))
+	mux.Handle(fmt.Sprintf("%s /user/signup", http.MethodPost), dynamic.ThenFunc(app.userSignUpPost))
+	mux.Handle(fmt.Sprintf("%s /user/login", http.MethodGet), dynamic.ThenFunc(app.userLogin))
+	mux.Handle(fmt.Sprintf("%s /user/login", http.MethodPost), dynamic.ThenFunc(app.userLoginPost))
+	mux.Handle(fmt.Sprintf("%s /user/logout", http.MethodPost), dynamic.ThenFunc(app.userLogoutPost))
+
 	standard := alice.New(app.panicRecover, app.loggingRequest, securityHeader)
 	// We can apply middleware here by chaining
 	return standard.Then(mux)

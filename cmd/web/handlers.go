@@ -10,6 +10,19 @@ import (
 	"snippetbox.haonguyen.tech/internal/validator"
 )
 
+type userLoginForm struct {
+	Email               string `form:"email"`
+	Password            string `form:"password"`
+	validator.Validator `form:"-"`
+}
+
+type userSignUpForm struct {
+	Name                string `form:"name"`
+	Email               string `form:"email"`
+	Password            string `form:"password"`
+	validator.Validator `form:"-"`
+}
+
 type snippetCreateForm struct {
 	Title               string `form:"title"`
 	Content             string `form:"content"`
@@ -95,4 +108,109 @@ func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
 	app.infoLog.Printf("Redirecting to /snippet/%d", id)
 	// Redirect the user to the relevant page for the snippet.
 	http.Redirect(w, r, fmt.Sprintf("/snippet/%d", id), http.StatusSeeOther)
+}
+
+func (app *application) userSignUp(w http.ResponseWriter, r *http.Request) {
+	data := &templateData{
+		Form: &userSignUpForm{},
+	}
+	app.render(w, http.StatusOK, "signup.tmpl.html", data)
+}
+
+func (app *application) userSignUpPost(w http.ResponseWriter, r *http.Request) {
+	form := &userSignUpForm{}
+	if err := app.decodePostForm(r, &form); err != nil {
+		app.clientError(w, http.StatusBadRequest)
+		return
+	}
+
+	// Validate user input form
+	form.CheckField(form.NotBlank(form.Name), "name", "This field cannot be blank")
+	form.CheckField(form.NotBlank(form.Email), "email", "This field cannot be blank")
+	form.CheckField(form.NotBlank(form.Password), "password", "This field cannot be blank")
+	form.CheckField(form.MinChars(form.Password, 8), "password", "This field must be at least 8 characters")
+	form.CheckField(form.Matches(form.Email, validator.EmailRX), "email", "This filed must be valid email address")
+
+	if !form.Valid() {
+		data := app.newTemplateData(r)
+		data.Form = form
+		app.render(w, http.StatusUnprocessableEntity, "signup.tmpl.html", data)
+		return
+	}
+
+	if err := app.user.Insert(form.Name, form.Email, form.Password); err != nil {
+		if errors.Is(err, models.ErrDuplicateEmail) {
+			data := app.newTemplateData(r)
+			form.AddFieldError("email", "Email already exist!")
+			data.Form = form
+			app.render(w, http.StatusUnprocessableEntity, "signup.tmpl.html", data)
+			return
+		}
+		app.serverError(w, err)
+		return
+	}
+
+	app.sessionManager.Put(r.Context(), "flash", "User created successfully! Please login")
+	app.infoLog.Println("Redirecting to /user/login")
+	http.Redirect(w, r, "/user/login", http.StatusSeeOther)
+}
+
+func (app *application) userLogin(w http.ResponseWriter, r *http.Request) {
+	data := &templateData{
+		Form: &userLoginForm{},
+	}
+	app.render(w, http.StatusOK, "login.tmpl.html", data)
+}
+
+func (app *application) userLoginPost(w http.ResponseWriter, r *http.Request) {
+	form := &userLoginForm{}
+
+	data := app.newTemplateData(r)
+	if err := app.decodePostForm(r, &form); err != nil {
+		app.clientError(w, http.StatusBadRequest)
+		return
+	}
+
+	// Validate user login input
+	form.CheckField(form.NotBlank(form.Email), "email", "This field cannot be blank")
+	form.CheckField(form.NotBlank(form.Password), "password", "This field cannot be blank")
+	form.CheckField(form.MinChars(form.Password, 8), "password", "This field must be at least 8 characters")
+	form.CheckField(form.Matches(form.Email, validator.EmailRX), "email", "This filed must be valid email address")
+
+	if !form.Valid() {
+		data.Form = form
+		app.render(w, http.StatusUnprocessableEntity, "login.tmpl.html", data)
+		return
+	}
+	id, err := app.user.Authenticate(form.Email, form.Password)
+	if err != nil {
+		if errors.Is(err, models.ErrInvalidCredentials) {
+			form.AddNonFieldError("Email or Password is incorrect!")
+			data.Form = form
+			app.render(w, http.StatusUnprocessableEntity, "login.tmpl.html", data)
+			return
+		} else if errors.Is(err, models.ErrNoRecord) {
+			form.AddFieldError("email", "User does not exists!")
+			data.Form = form
+			app.render(w, http.StatusNotFound, "login.tmpl.html", data)
+			return
+		} else {
+			app.render(w, http.StatusBadRequest, "login.tmpl.html", data)
+			return
+		}
+	}
+
+	if err := app.sessionManager.RenewToken(r.Context()); err != nil {
+		app.serverError(w, err)
+		return
+	}
+	// Add the ID of the current user to the session, so that they are now 'logged in'.
+	app.sessionManager.Put(r.Context(), "authenticatedUserID", id)
+
+	app.infoLog.Printf("User with id: %d, logging success\n", id)
+	http.Redirect(w, r, "/snippet", http.StatusSeeOther)
+}
+
+func (app *application) userLogoutPost(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, "Displaying the user sign up page")
 }
