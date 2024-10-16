@@ -2,10 +2,12 @@ package main
 
 import (
 	"html/template"
+	"io/fs"
 	"path/filepath"
 	"time"
 
 	"snippetbox.haonguyen.tech/internal/models"
+	"snippetbox.haonguyen.tech/ui"
 )
 
 // templateData Mostly define data that will be used in the template,
@@ -32,23 +34,19 @@ var funcMap = template.FuncMap{
 func newTemplateCache() (map[string]*template.Template, error) {
 	cache := map[string]*template.Template{}
 
-	pages, err := filepath.Glob("./ui/html/pages/*.tmpl.html")
+	pages, err := fs.Glob(ui.Files, "html/pages/*.tmpl.html")
 	if err != nil {
 		return nil, err
 	}
 
 	for _, page := range pages {
 		name := filepath.Base(page)
-		ts, err := template.New(name).Funcs(funcMap).ParseFiles("./ui/html/base.tmpl.html")
-		if err != nil {
-			return nil, err
+		patterns := []string{
+			"html/base.tmpl.html",
+			"html/partials/*.tmpl.html",
+			page,
 		}
-		ts, err = ts.ParseGlob("./ui/html/partials/*.tmpl.html")
-		if err != nil {
-			return nil, err
-		}
-
-		ts, err = ts.ParseFiles(page)
+		ts, err := template.New(name).Funcs(funcMap).ParseFS(ui.Files, patterns...)
 		if err != nil {
 			return nil, err
 		}
