@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/justinas/alice"
+	"snippetbox.haonguyen.tech/ui"
 )
 
 func (app *application) routes() http.Handler {
@@ -12,14 +13,12 @@ func (app *application) routes() http.Handler {
 	// as good practice always use our own ServerMux
 	mux := http.NewServeMux()
 
-	// Create a file server which serves files out of the "./ui/static" directory.
-	// Note that the path given to the http.Dir function is relative to the project
-	// directory root.
-	fileServer := http.FileServer(http.Dir("./ui/static/"))
+	// Handle static files by embed
+	fileServer := http.FileServerFS(ui.Files)
 
 	dynamic := alice.New(app.sessionManager.LoadAndSave, noSurf, app.authenticate)
 
-	mux.Handle("/static/", http.StripPrefix("/static", fileServer))
+	mux.Handle("/static/", fileServer)
 
 	// Any route behind this will require authentication
 	protected := dynamic.Append(app.requireAuth)
