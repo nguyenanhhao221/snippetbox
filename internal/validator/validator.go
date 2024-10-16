@@ -46,15 +46,6 @@ func (v *Validator) MaxChar(value string, n int) bool {
 	return utf8.RuneCountInString(value) <= n
 }
 
-func (v *Validator) PermittedInt(value int, permittedValues ...int) bool {
-	for i := range permittedValues {
-		if value == permittedValues[i] {
-			return true
-		}
-	}
-	return false
-}
-
 func (v *Validator) CheckField(ok bool, key, message string) {
 	if !ok {
 		v.AddFieldError(key, message)
@@ -67,4 +58,14 @@ func (v *Validator) MinChars(value string, n int) bool {
 
 func (v *Validator) Matches(value string, rx *regexp.Regexp) bool {
 	return rx.MatchString(value)
+}
+
+// PermittedValues Generic function that check if give [value] is in give list of [permittedValues]
+func PermittedValues[T comparable](value T, permittedValues ...T) bool {
+	for i := range permittedValues {
+		if value == permittedValues[i] {
+			return true
+		}
+	}
+	return false
 }
