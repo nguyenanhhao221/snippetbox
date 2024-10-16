@@ -14,5 +14,6 @@ require (
 
 require (
 	filippo.io/edwards25519 v1.1.0 // indirect
+	github.com/justinas/nosurf v1.1.1 // indirect
 	gopkg.in/go-playground/assert.v1 v1.2.1 // indirect
 )

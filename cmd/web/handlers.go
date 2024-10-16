@@ -111,9 +111,8 @@ func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) userSignUp(w http.ResponseWriter, r *http.Request) {
-	data := &templateData{
-		Form: &userSignUpForm{},
-	}
+	data := app.newTemplateData(r)
+	data.Form = &userSignUpForm{}
 	app.render(w, http.StatusOK, "signup.tmpl.html", data)
 }
 
@@ -156,9 +155,8 @@ func (app *application) userSignUpPost(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) userLogin(w http.ResponseWriter, r *http.Request) {
-	data := &templateData{
-		Form: &userLoginForm{},
-	}
+	data := app.newTemplateData(r)
+	data.Form = &userLoginForm{}
 	app.render(w, http.StatusOK, "login.tmpl.html", data)
 }
 
