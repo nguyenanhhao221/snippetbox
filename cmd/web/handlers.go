@@ -30,6 +30,12 @@ type snippetCreateForm struct {
 	validator.Validator `form:"-"`
 }
 
+func ping(w http.ResponseWriter, _ *http.Request) {
+	if _, err := w.Write([]byte("OK")); err != nil {
+		return
+	}
+}
+
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/" {
 		app.notFound(w)
