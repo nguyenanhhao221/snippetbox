@@ -24,7 +24,6 @@ func (app *application) loggingRequest(next http.Handler) http.Handler {
 		app.infoLog.Printf("%s - %s %s %s", r.RemoteAddr, r.Proto, r.Method, r.URL.RequestURI())
 		next.ServeHTTP(w, r)
 	})
-
 }
 
 func (app *application) panicRecover(next http.Handler) http.Handler {
@@ -37,7 +36,6 @@ func (app *application) panicRecover(next http.Handler) http.Handler {
 		}()
 		next.ServeHTTP(w, r)
 	})
-
 }
 
 func (app *application) requireAuth(next http.Handler) http.Handler {
