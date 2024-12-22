@@ -75,7 +75,7 @@ func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) snippetCreateForm(w http.ResponseWriter, r *http.Request) {
-	var data = app.newTemplateData(r)
+	data := app.newTemplateData(r)
 	data.Form = snippetCreateForm{
 		Expires: 1,
 	}
@@ -225,5 +225,4 @@ func (app *application) userLogoutPost(w http.ResponseWriter, r *http.Request) {
 
 	app.sessionManager.Put(r.Context(), "flash", "Logout successfully!")
 	http.Redirect(w, r, "/", http.StatusSeeOther)
-
 }

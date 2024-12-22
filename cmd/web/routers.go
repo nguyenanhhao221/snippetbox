@@ -9,7 +9,6 @@ import (
 )
 
 func (app *application) routes() http.Handler {
-
 	// as good practice always use our own ServerMux
 	mux := http.NewServeMux()
 
@@ -19,6 +18,8 @@ func (app *application) routes() http.Handler {
 	dynamic := alice.New(app.sessionManager.LoadAndSave, noSurf, app.authenticate)
 
 	mux.Handle("/static/", fileServer)
+	// Ping route which does not request any middleware yet
+	mux.HandleFunc(fmt.Sprintf("%s /ping", http.MethodGet), ping)
 
 	// Any route behind this will require authentication
 	protected := dynamic.Append(app.requireAuth)
