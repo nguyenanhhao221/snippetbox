@@ -19,6 +19,12 @@ type SnippetModel struct {
 	DB *sql.DB
 }
 
+type SnippetModelInterface interface {
+	Insert(title string, content string, expires int) (int, error)
+	Get(id int) (*Snippet, error)
+	Latest() ([]*Snippet, error)
+}
+
 // CRUD Operations
 
 // Get Single Record base on ID, only if expire is valid
@@ -27,7 +33,6 @@ func (m *SnippetModel) Get(id int) (*Snippet, error) {
 
 	snippet := &Snippet{}
 	err := m.DB.QueryRow(stmt, id).Scan(&snippet.ID, &snippet.Title, &snippet.Content, &snippet.Expires, &snippet.Created)
-
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, ErrNoRecord
