@@ -41,6 +41,7 @@ func newTestApplication(t *testing.T) *application {
 		formDecoder:    formDecoder,
 		sessionManager: sessionManager,
 		snippets:       &mocks.SnippetModel{},
+		user:           &mocks.UserModel{},
 	}
 }
 
